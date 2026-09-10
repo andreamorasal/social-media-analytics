@@ -20,8 +20,18 @@ NUMBER_OF_POSTS = 500
 # 20 events/second = 1,200 events/minute
 EVENTS_PER_SECOND = 20
 
-# Post that will be used for viral-content detection
-VIRAL_POST_ID = "post_1"
+# Multiple posts will be used for viral-content detection.
+# The simulator rotates the active viral post every minute.
+VIRAL_POST_IDS = [
+    "post_1",
+    "post_2",
+    "post_3",
+    "post_4",
+    "post_5"
+]
+
+# How long each viral post receives the viral burst.
+VIRAL_BURST_SECONDS = 60
 
 
 # ============================================================
@@ -38,8 +48,119 @@ COUNTRIES = [
     "Belgium",
     "Portugal",
     "United States",
-    "Canada"
+    "Canada",
+    "Venezuela",
+    "Argentina",
+    "Brazil",
+    "Mexico",
+    "Colombia",
+    "Chile"
 ]
+
+
+# Realistic names for the simulated users.
+USER_NAMES = [
+    "Maria Fernanda Angulo",
+    "Philipp Herr",
+    "Sofia Martinez",
+    "Daniel Garcia",
+    "Laura Schmidt",
+    "Carlos Rodriguez",
+    "Emma Johnson",
+    "Lucas Weber",
+    "Valentina Torres",
+    "Andreas Muller",
+    "Isabella Rossi",
+    "Mateo Fernandez",
+    "Ana Silva",
+    "Thomas Becker",
+    "Camila Gonzalez",
+    "Julian Klein",
+    "Elena Moreno",
+    "David Wilson",
+    "Lucia Romero",
+    "Felix Wagner",
+    "Paula Sanchez",
+    "Martin Fischer",
+    "Gabriela Perez",
+    "Nicolas Martin",
+    "Clara Lopez",
+    "Maximilian Bauer",
+    "Daniela Castro",
+    "Jonas Hoffmann",
+    "Mariana Alvarez",
+    "Sebastian Meyer",
+    "Carolina Rojas",
+    "Alexander Schneider",
+    "Victoria Navarro",
+    "Leonard Koch",
+    "Sofia Herrera",
+    "Benjamin Wolf",
+    "Natalia Vargas",
+    "Oliver Brown",
+    "Andrea Molina",
+    "Henrik Hansen",
+    "Isabel Cruz",
+    "Michael Taylor",
+    "Fernanda Silva",
+    "Stefan Richter",
+    "Alejandra Mendoza",
+    "James Anderson",
+    "Camilo Ramirez",
+    "Anna Klein",
+    "Ricardo Flores",
+    "Charlotte Evans",
+    "Diego Castillo",
+    "Julia Hartmann",
+    "Miguel Santos",
+    "Marie Dubois",
+    "Pablo Gutierrez",
+    "Lena Schneider",
+    "Javier Ortega",
+    "Sophie Bernard",
+    "Martin Zimmermann",
+    "Valeria Jimenez",
+    "Robert Thomas",
+    "Catalina Ruiz",
+    "Felipe Moreno",
+    "Emily Clark",
+    "Juan Perez",
+    "Marta Iglesias",
+    "Paul Fischer",
+    "Daniela Romero",
+    "George Walker",
+    "Claudia Torres",
+    "Luis Herrera",
+    "Nina Weber",
+    "Francisco Navarro",
+    "Sarah Mitchell",
+    "Alejandro Soto",
+    "Laura Martinez",
+    "Marco Conti",
+    "Gabriela Morales",
+    "Henry Davis",
+    "Elisa Romano",
+    "Jorge Mendoza",
+    "Lisa Bauer",
+    "Santiago Vargas",
+    "Thomas Wilson",
+    "Monica Castro",
+    "Martin Lopez",
+    "Eva Schmidt",
+    "Rafael Torres",
+    "Jessica Moore",
+    "Antonio Ruiz",
+    "Christine Meyer",
+    "Manuel Alvarez",
+    "Laura Garcia",
+    "Pedro Santos",
+    "Hannah Becker",
+    "Esteban Rojas",
+    "Nicole Martin",
+    "Fernando Castillo",
+    "Amelie Dubois"
+]
+
 
 HASHTAGS = [
     "#travel",
@@ -58,6 +179,7 @@ HASHTAGS = [
     "#movies",
     "#vacation"
 ]
+
 
 # Some hashtags are intentionally more popular.
 HASHTAG_WEIGHTS = [
@@ -93,14 +215,17 @@ EVENT_TYPES = [
     "profile_visit"
 ]
 
+
+# Increase the percentage of likes so the simulator can
+# realistically create >500 likes within a one-minute window.
 EVENT_WEIGHTS = [
     2,    # post_created
-    35,   # like
+    55,   # like
     10,   # comment
-    10,   # share
+    8,    # share
     5,    # follow
-    25,   # video_view
-    13    # profile_visit
+    12,   # video_view
+    8     # profile_visit
 ]
 
 
@@ -127,6 +252,7 @@ POSITIVE_COMMENTS = [
     "Such a great experience!"
 ]
 
+
 NEUTRAL_COMMENTS = [
     "Interesting.",
     "Thanks for sharing.",
@@ -144,6 +270,7 @@ NEUTRAL_COMMENTS = [
     "I understand.",
     "Noted."
 ]
+
 
 NEGATIVE_COMMENTS = [
     "I don't like this.",
@@ -198,6 +325,21 @@ def random_past_timestamp(days=365):
     return timestamp.isoformat()
 
 
+def get_current_viral_post(posts, viral_post_index):
+    """
+    Return the post currently receiving the viral burst.
+
+    The simulator changes the active viral post every minute.
+    """
+
+    viral_post_id = VIRAL_POST_IDS[viral_post_index]
+
+    return next(
+        post for post in posts
+        if post["post_id"] == viral_post_id
+    )
+
+
 # ============================================================
 # GENERATE USERS
 # ============================================================
@@ -210,7 +352,7 @@ def generate_users():
 
         user = {
             "user_id": f"user_{i}",
-            "username": f"user_{i:03d}",
+            "username": USER_NAMES[i - 1],
             "country": random.choice(COUNTRIES),
             "created_at": random_past_timestamp()
         }
@@ -234,10 +376,21 @@ def generate_posts(users):
 
         creator = random.choice(users)
 
-        # post_1 is always #travel
-        if post_id == VIRAL_POST_ID:
-            hashtag = "#travel"
+        # Viral posts use popular hashtags.
+        if post_id in VIRAL_POST_IDS:
+
+            viral_hashtags = [
+                "#travel",
+                "#food",
+                "#fitness",
+                "#music",
+                "#fashion"
+            ]
+
+            hashtag = random.choice(viral_hashtags)
+
         else:
+
             hashtag = random.choices(
                 HASHTAGS,
                 weights=HASHTAG_WEIGHTS,
@@ -308,7 +461,12 @@ def choose_target_user(users, current_user):
 # CREATE EVENT
 # ============================================================
 
-def create_event(event_type, users, posts):
+def create_event(
+    event_type,
+    users,
+    posts,
+    current_viral_post
+):
 
     # User performing the event
     user = random.choice(users)
@@ -317,12 +475,15 @@ def create_event(event_type, users, posts):
     target_user = choose_target_user(users, user)
 
     event = {
+
         "event_id": str(uuid.uuid4()),
+
         "event_type": event_type,
 
         # ----------------------------------------------------
         # USER INFORMATION
         # ----------------------------------------------------
+
         "user_id": user["user_id"],
         "username": user["username"],
         "country": user["country"],
@@ -331,12 +492,14 @@ def create_event(event_type, users, posts):
         # ----------------------------------------------------
         # TARGET USER
         # ----------------------------------------------------
+
         "target_user_id": None,
         "target_username": None,
 
         # ----------------------------------------------------
         # POST INFORMATION
         # ----------------------------------------------------
+
         "post_id": None,
         "post_creator_user_id": None,
         "post_created_at": None,
@@ -345,11 +508,13 @@ def create_event(event_type, users, posts):
         # ----------------------------------------------------
         # COMMENT
         # ----------------------------------------------------
+
         "comment_text": None,
 
         # ----------------------------------------------------
         # EVENT TIMESTAMP
         # ----------------------------------------------------
+
         "timestamp": utc_now()
     }
 
@@ -360,10 +525,18 @@ def create_event(event_type, users, posts):
 
     if event_type == "like":
 
-        # 40% of likes go to post_1
-        if random.random() < 0.40:
-            post = posts[0]
+        # During the viral burst, 85% of likes go to the
+        # currently active viral post.
+        #
+        # This creates >500 likes within one minute while
+        # still allowing other posts to receive likes.
+
+        if random.random() < 0.85:
+
+            post = current_viral_post
+
         else:
+
             post = random.choice(posts)
 
         creator = next(
@@ -516,6 +689,7 @@ posts = generate_posts(users)
 print(f"Generated {len(posts)} posts.")
 
 print()
+
 print("Users and posts are kept in memory for event generation.")
 print("No additional JSON files are created.")
 print()
@@ -524,23 +698,46 @@ print("Sample USER:")
 print(json.dumps(users[0], indent=2))
 
 print()
+
 print("Sample POST:")
 print(json.dumps(posts[0], indent=2))
 
 print()
+
 print("Starting continuous event generation...")
 print()
+
 print(f"Kafka topic: {KAFKA_TOPIC}")
 print(f"Events per second: {EVENTS_PER_SECOND}")
 print(f"Expected events per minute: {EVENTS_PER_SECOND * 60}")
-print(f"Viral post: {VIRAL_POST_ID}")
+print(f"Viral posts: {', '.join(VIRAL_POST_IDS)}")
+print(f"Viral burst duration: {VIRAL_BURST_SECONDS} seconds")
 print()
+
+print("The active viral post changes every minute.")
 print("Press Ctrl+C to stop.")
 print()
 
 
 event_count = 0
+
 start_time = time.time()
+
+viral_post_index = 0
+
+viral_cycle_start = time.time()
+
+current_viral_post = get_current_viral_post(
+    posts,
+    viral_post_index
+)
+
+
+print(
+    f"Current viral post: "
+    f"{current_viral_post['post_id']} "
+    f"({current_viral_post['hashtag']})"
+)
 
 
 try:
@@ -549,6 +746,36 @@ try:
 
         loop_start = time.time()
 
+        # ----------------------------------------------------
+        # CHANGE VIRAL POST EVERY 60 SECONDS
+        # ----------------------------------------------------
+
+        if time.time() - viral_cycle_start >= VIRAL_BURST_SECONDS:
+
+            viral_post_index = (
+                viral_post_index + 1
+            ) % len(VIRAL_POST_IDS)
+
+            current_viral_post = get_current_viral_post(
+                posts,
+                viral_post_index
+            )
+
+            viral_cycle_start = time.time()
+
+            print()
+            print(
+                f"🔥 NEW VIRAL POST: "
+                f"{current_viral_post['post_id']} "
+                f"({current_viral_post['hashtag']})"
+            )
+            print()
+
+
+        # ----------------------------------------------------
+        # GENERATE EVENTS
+        # ----------------------------------------------------
+
         for _ in range(EVENTS_PER_SECOND):
 
             event_type = choose_event_type()
@@ -556,7 +783,8 @@ try:
             event = create_event(
                 event_type,
                 users,
-                posts
+                posts,
+                current_viral_post
             )
 
             producer.send(
@@ -566,25 +794,43 @@ try:
 
             event_count += 1
 
+
         producer.flush()
+
+
+        # ----------------------------------------------------
+        # DISPLAY RATE
+        # ----------------------------------------------------
 
         elapsed = time.time() - start_time
 
         if elapsed > 0:
 
-            events_per_second = event_count / elapsed
-            events_per_minute = events_per_second * 60
+            events_per_second = (
+                event_count / elapsed
+            )
+
+            events_per_minute = (
+                events_per_second * 60
+            )
 
         else:
 
             events_per_second = 0
             events_per_minute = 0
 
+
         print(
             f"Events: {event_count:,} | "
             f"Rate: {events_per_second:.2f}/sec | "
-            f"~{events_per_minute:.0f}/min"
+            f"~{events_per_minute:.0f}/min | "
+            f"Viral: {current_viral_post['post_id']}"
         )
+
+
+        # ----------------------------------------------------
+        # KEEP EVENT RATE CLOSE TO 20 EVENTS/SECOND
+        # ----------------------------------------------------
 
         loop_elapsed = time.time() - loop_start
 
@@ -609,4 +855,7 @@ finally:
 
     print()
     print("Simulator stopped.")
-    print(f"Total events generated: {event_count:,}")
+    print(
+        f"Total events generated: "
+        f"{event_count:,}"
+    )
