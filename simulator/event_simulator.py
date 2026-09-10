@@ -60,9 +60,9 @@ COUNTRIES = [
 
 # Realistic names for the simulated users.
 USER_NAMES = [
-    "Maria Fernanda Angulo",
-    "Philipp Herr",
-    "Sofia Martinez",
+    "Maria Fernanda Salcedo",
+    "Philipp Morales",
+    "Andrea Herr",
     "Daniel Garcia",
     "Laura Schmidt",
     "Carlos Rodriguez",
@@ -158,7 +158,8 @@ USER_NAMES = [
     "Esteban Rojas",
     "Nicole Martin",
     "Fernando Castillo",
-    "Amelie Dubois"
+    "Amelie Dubois",
+    "Rosalba Moreno"
 ]
 
 

@@ -1,0 +1,62 @@
+-- Create table VIRAL_POSTS:
+
+CREATE TABLE IF NOT EXISTS SOCIAL_MEDIA_DB_AMS.GOLD.VIRAL_POSTS (
+    POST_ID STRING,
+    LIKE_COUNT INTEGER,
+    WINDOW_MINUTES INTEGER,
+    WINDOW_START TIMESTAMP_TZ,
+    WINDOW_END TIMESTAMP_TZ,
+    VIRAL_DETECTED_AT TIMESTAMP_TZ
+);
+
+
+-- Populate VIRAL_POSTS: 
+
+INSERT INTO SOCIAL_MEDIA_DB_AMS.GOLD.VIRAL_POSTS
+(
+    POST_ID,
+    LIKE_COUNT,
+    WINDOW_MINUTES,
+    WINDOW_START,
+    WINDOW_END,
+    VIRAL_DETECTED_AT
+)
+
+WITH latest_event AS (
+    SELECT MAX(EVENT_TIMESTAMP) AS latest_timestamp
+    FROM SOCIAL_MEDIA_DB_AMS.SILVER.CURATED_EVENTS
+),
+
+viral AS (
+    SELECT
+        c.POST_ID,
+        COUNT(*) AS LIKE_COUNT
+    FROM SOCIAL_MEDIA_DB_AMS.SILVER.CURATED_EVENTS c
+    CROSS JOIN latest_event l
+    WHERE c.EVENT_TYPE = 'like'
+      AND c.POST_ID IS NOT NULL
+      AND c.EVENT_TIMESTAMP >= DATEADD(
+          MINUTE,
+          -5,
+          l.latest_timestamp
+      )
+      AND c.EVENT_TIMESTAMP <= l.latest_timestamp
+    GROUP BY c.POST_ID
+    HAVING COUNT(*) > 500
+)
+
+SELECT
+    POST_ID,
+    LIKE_COUNT,
+    5 AS WINDOW_MINUTES,
+    DATEADD(
+        MINUTE,
+        -5,
+        l.latest_timestamp
+    ) AS WINDOW_START,
+    l.latest_timestamp AS WINDOW_END,
+    CURRENT_TIMESTAMP() AS VIRAL_DETECTED_AT
+FROM viral
+CROSS JOIN latest_event l;
+
+
