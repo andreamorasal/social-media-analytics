@@ -30,9 +30,9 @@ The project connects Data Engineering with business analytics by exploring how s
 
 The pipeline streams simulated social media events through Kafka and PySpark Structured Streaming, where events are parsed, validated and deduplicated before being stored in Snowflake. SQL scripts then transform, enrich and aggregate the raw data to produce curated datasets for social media analytics and reporting.
 
-**Pipeline architecture diagram**
+**Pipeline architecture flowchart**
 
-SCREENSHOT 
+![Pipeline architecture](screenshots/pipeline_architecture.png)
 
 ## Event deneration and ingestion
 
@@ -143,8 +143,6 @@ These use cases are supported by the project's planned analytical SQL scripts. T
 Tableau can be used to present the analytical outputs through dashboards focused on social media engagement, trending hashtags, viral content, influencer performance and comment sentiment.
 
 ## Project screenshots
-
-Add screenshots here to illustrate the pipeline architecture, Snowflake data and, if available, the Tableau dashboard.
 
 ### Pipeline architecture
 
