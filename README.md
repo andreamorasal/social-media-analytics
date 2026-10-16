@@ -144,17 +144,29 @@ Tableau can be used to present the analytical outputs through dashboards focused
 
 ## Project screenshots
 
-### Pipeline architecture
+### 🐍 Python event simulator
 
-Add your pipeline architecture image here, if you are using a separate image rather than a Mermaid diagram.
+![Python Simulator](screenshots/python_simulator.png)
 
-### Snowflake results
+### 🔗 Apache Kafka consumer
 
-Add a screenshot showing the data stored in the `RAW_EVENTS` table.
+![Kafka Consumer](screenshots/kafka_consumer.png)
 
-### Tableau dashboard
+### ⚡ PySpark structured streaming
 
-Add a screenshot if you have implemented a Tableau dashboard.
+![PySpark Streaming](screenshots/pyspark_stream.png)
+
+### ❄️ Snowflake data layers
+
+![Snowflake Data Layers](screenshots/snowflake_data_layers.png)
+
+### #️⃣ Trending hashtag analytics
+
+![Trending Hashtag Analytics](screenshots/trending_hashtag_analytics_snowflake.png)
+
+### 📊 Tableau dashboard
+
+![Tableau Dashboard](screenshots/tableau_dashboard.png)
 
 ## Key skills demonstrated
 
