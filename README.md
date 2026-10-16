@@ -1,4 +1,4 @@
-# Social Media Analytics Pipeline
+# Social media analytics pipeline 📡
 
 A Data Engineering portfolio project exploring real time social media event processing using Python, Apache Kafka, PySpark Structured Streaming and Snowflake.
 
